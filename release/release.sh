@@ -1,7 +1,7 @@
 #!/bin/bash
 # Build and publish changed foobar2000 for Mac plugins.
-# GitHub Release assets are used for Behringer Multichannel Output downloads.
-# Legacy plugins continue to be mirrored to nanor.ru for their existing updater.
+# GitHub Release assets are used as downloads for all plugins.
+# nanor.ru hosts the catalog/details and update manifest.
 set -euo pipefail
 
 HERE="$(cd "$(dirname "$0")" && pwd)"
@@ -60,6 +60,14 @@ for key in ("foo_wave_seekbar", "foo_classic_ui", "foo_aimp_ui", "foo_behringer_
         print(key)
 PY
 )
+for entry in "${PLUGINS[@]}"; do
+  IFS='|' read -r key sub title builder <<<"$entry"
+  version=$(cat "$DIST/$key.version")
+  tag="$key-v$version"
+  if ! gh release view "$tag" >/dev/null 2>&1; then
+    grep -qx "$key" <<<"$CHANGED" || CHANGED+="${CHANGED:+$'\n'}$key"
+  fi
+done
 if [[ -n "$CHANGED" ]]; then echo "Will publish: $(echo "$CHANGED" | tr '\n' ' ')"; fi
 if [[ -z "$CHANGED" && $INSTALL == 0 ]]; then
   echo "Nothing to publish: plugin versions match updates.json."
@@ -74,6 +82,28 @@ for entry in "${PLUGINS[@]}"; do
   [[ -n "$ver" ]] || { echo "Could not read COMPONENT_VERSION for $key" >&2; exit 1; }
   if ! grep -qx "$key" <<<"$CHANGED" && [[ $INSTALL == 0 ]]; then
     echo "-- $title $ver (unchanged, skip build)"
+    continue
+  fi
+  remote_version=$(python3 - "$DIST/updates.remote.json" "$key" <<'PY'
+import json, sys
+print(json.load(open(sys.argv[1])).get(sys.argv[2], {}).get("version", ""))
+PY
+)
+  if [[ $INSTALL == 0 && "$remote_version" == "$ver" ]]; then
+    # Seed a missing GitHub Release from the already-published, checksum-verified package.
+    read -r remote_url remote_sha < <(python3 - "$DIST/updates.remote.json" "$key" <<'PY'
+import json, sys
+entry = json.load(open(sys.argv[1])).get(sys.argv[2], {})
+print(entry.get("file", ""), entry.get("sha256", ""))
+PY
+)
+    [[ -n "$remote_url" && -n "$remote_sha" ]] || { echo "Missing published package/checksum for $key" >&2; exit 1; }
+    curl -fsSL "$remote_url" -o "$DIST/$key.fb2k-component"
+    local_sha=$(shasum -a 256 "$DIST/$key.fb2k-component" | cut -d' ' -f1)
+    [[ "$local_sha" == "$remote_sha" ]] || { echo "Published package checksum mismatch for $key" >&2; exit 1; }
+    echo "$local_sha" > "$DIST/$key.sha256"
+    echo "$sub" > "$DIST/$key.sub"
+    echo "-- $title $ver (copy verified current package to GitHub Release)"
     continue
   fi
   echo "-- $title $ver"
@@ -110,8 +140,7 @@ if [[ -z "$CHANGED" ]]; then
   exit 0
 fi
 
-# Legacy binaries stay on nanor.ru; the new plugin's download is its GitHub Release asset.
-ssh_run "cd $WEBROOT/$SITE && sha256sum waveform-seekbar/foo_wave_seekbar.fb2k-component classic-ui/foo_classic_ui.fb2k-component aimp-ui/foo_aimp_ui.fb2k-component" > "$DIST/remote.sha256"
+# Record each plugin's site slug for page and manifest generation.
 for entry in "${PLUGINS[@]}"; do
   IFS='|' read -r key sub title builder <<<"$entry"
   echo "$sub" > "$DIST/$key.sub"
@@ -122,26 +151,18 @@ import json, os, sys
 dist, notes, *changed = sys.argv[1:]
 read = lambda name: open(os.path.join(dist, name)).read().strip()
 data = json.load(open(os.path.join(dist, "updates.remote.json")))
-remote_sha = {}
-for line in open(os.path.join(dist, "remote.sha256")):
-    parts = line.split()
-    if len(parts) == 2:
-        remote_sha[os.path.basename(parts[1]).split(".")[0]] = parts[0]
-for key in ("foo_wave_seekbar", "foo_classic_ui", "foo_aimp_ui", "foo_behringer_output"):
+slugs = {"foo_wave_seekbar": "waveform-seekbar", "foo_classic_ui": "classic-ui", "foo_aimp_ui": "aimp-ui", "foo_behringer_output": "behringer-output"}
+for key, slug in slugs.items():
     e = data.setdefault(key, {"url": "https://nanor.ru/foobar/"})
     version = read(key + ".version")
-    if key == "foo_behringer_output":
-        e["url"] = "https://nanor.ru/foobar2000-mac-plugins/behringer-output/"
-        e["file"] = "https://github.com/kstepanchuk/foobar2000-mac-plugins/releases/download/%s-v%s/%s.fb2k-component" % (key, version, key)
-    else:
-        e["file"] = "https://nanor.ru/foobar2000-mac-plugins/%s/%s.fb2k-component" % (read(key + ".sub"), key)
+    remote_version = e.get("version")
+    e["url"] = "https://nanor.ru/foobar2000-mac-plugins/%s/" % slug
+    e["file"] = "https://github.com/kstepanchuk/foobar2000-mac-plugins/releases/download/%s-v%s/%s.fb2k-component" % (key, version, key)
     if key in changed:
         e["version"] = version
         e["sha256"] = read(key + ".sha256")
-        if notes:
+        if notes and remote_version != version:
             e["notes"] = notes
-    elif key in remote_sha:
-        e["sha256"] = remote_sha[key]
 json.dump(data, open(os.path.join(dist, "updates.json"), "w"), ensure_ascii=False, indent=2)
 PY
 
@@ -153,9 +174,13 @@ page = (here / "site" / "index.html").read_text()
 for key in ("foo_wave_seekbar", "foo_classic_ui", "foo_aimp_ui", "foo_behringer_output"):
     page = page.replace("{{" + key + "}}", (dist / (key + ".version")).read_text().strip())
 (dist / "site-index.html").write_text(page)
-version = (dist / "foo_behringer_output.version").read_text().strip()
-detail = (here / "site" / "behringer-output" / "index.html").read_text()
-(dist / "site-behringer-output.html").write_text(detail.replace("{{VERSION}}", version))
+slugs = {"foo_wave_seekbar": "waveform-seekbar", "foo_classic_ui": "classic-ui", "foo_aimp_ui": "aimp-ui", "foo_behringer_output": "behringer-output"}
+for key, slug in slugs.items():
+    version = (dist / (key + ".version")).read_text().strip()
+    release_url = "https://github.com/kstepanchuk/foobar2000-mac-plugins/releases/download/%s-v%s/%s.fb2k-component" % (key, version, key)
+    detail = (here / "site" / slug / "index.html").read_text()
+    detail = detail.replace("{{VERSION}}", version).replace("{{RELEASE_URL}}", release_url)
+    (dist / ("site-" + key + ".html")).write_text(detail)
 PY
 
 if [[ $DRY == 1 ]]; then
@@ -164,17 +189,31 @@ if [[ $DRY == 1 ]]; then
   exit 0
 fi
 
-if grep -qx "foo_behringer_output" <<<"$CHANGED"; then
-  key=foo_behringer_output
+for entry in "${PLUGINS[@]}"; do
+  IFS='|' read -r key sub title builder <<<"$entry"
+  grep -qx "$key" <<<"$CHANGED" || continue
   ver=$(cat "$DIST/$key.version")
   tag="$key-v$ver"
-  notes="${NOTES:-Behringer Multichannel Output $ver}"
+  notes=$(python3 - "$DIST/updates.remote.json" "$DIST/$key.version" "$key" "$title" "$NOTES" <<'PY'
+import json, sys
+data = json.load(open(sys.argv[1]))
+version = open(sys.argv[2]).read().strip()
+entry = data.get(sys.argv[3], {})
+title = sys.argv[4]
+user_notes = sys.argv[5]
+if user_notes and entry.get("version") != version:
+    print(user_notes)
+else:
+    slug = {"foo_wave_seekbar": "waveform-seekbar", "foo_classic_ui": "classic-ui", "foo_aimp_ui": "aimp-ui", "foo_behringer_output": "behringer-output"}[sys.argv[3]]
+    print("%s %s. Download and installation details: https://nanor.ru/foobar2000-mac-plugins/%s/" % (title, version, slug))
+PY
+)
   if gh release view "$tag" >/dev/null 2>&1; then
     gh release upload "$tag" "$DIST/$key.fb2k-component" --clobber
   else
-    gh release create "$tag" "$DIST/$key.fb2k-component" --title "Behringer Multichannel Output $ver" --notes "$notes"
+    gh release create "$tag" "$DIST/$key.fb2k-component" --title "$title $ver" --notes "$notes"
   fi
-fi
+done
 
 echo "== Uploading"
 upload() {
@@ -184,18 +223,12 @@ upload() {
 }
 for entry in "${PLUGINS[@]}"; do
   IFS='|' read -r key sub title builder <<<"$entry"
-  if grep -qx "$key" <<<"$CHANGED" && [[ "$key" != "foo_behringer_output" ]]; then
+  grep -qx "$key" <<<"$CHANGED" || continue
+  if [[ "$key" != "foo_behringer_output" ]]; then
     upload "$DIST/$key.fb2k-component" "$SITE/$sub/$key.fb2k-component"
-    if [[ "$key" == "foo_wave_seekbar" ]]; then
-      upload "$DIST/$key.fb2k-component" "waveform-seekbar/$key.fb2k-component"
-    fi
-    ver=$(cat "$DIST/$key.version")
-    ssh_run "cd $WEBROOT/$SITE/$sub && cp index.html index.html.bak-$STAMP && sed -i -E 's#(<span class=\"tag\">)v[0-9.]+(</span>)#\\1v$ver\\2#; s#(<div class=\"download-meta\">)v[0-9.]+#\\1v$ver#' index.html"
   fi
+  upload "$DIST/site-$key.html" "$SITE/$sub/index.html"
 done
-if grep -qx "foo_behringer_output" <<<"$CHANGED"; then
-  upload "$DIST/site-behringer-output.html" "$SITE/behringer-output/index.html"
-fi
 upload "$DIST/site-index.html" "$SITE/index.html"
 upload "$DIST/updates.json" "foobar/updates.json"
 

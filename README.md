@@ -9,7 +9,7 @@ Four components for [foobar2000 for Mac](https://www.foobar2000.org/mac) 2.x (Ap
 | **AIMP UI** (`foo_aimp_ui`) | AIMP-style header, tabs, grouped two-line playlist and footer | `aimp-header`, `aimp-tabs`, `aimp-playlist`, `aimp-footer` |
 | **Behringer Multichannel Output** (`foo_behringer_output`) | Sends stereo playback to a selected output pair on a multichannel CoreAudio device | Output Device entries such as `FLOW 8 — 1/2` and `FLOW 8 — 3/4` |
 
-Downloads and descriptions in Russian: **https://nanor.ru/foobar2000-mac-plugins/**. Behringer Multichannel Output is also available as a `.fb2k-component` asset on [GitHub Releases](https://github.com/kstepanchuk/foobar2000-mac-plugins/releases).
+Downloads and descriptions in Russian: **https://nanor.ru/foobar2000-mac-plugins/**. Each component is also available as a `.fb2k-component` asset on its [GitHub Release](https://github.com/kstepanchuk/foobar2000-mac-plugins/releases): [Waveform Seekbar 0.8](https://github.com/kstepanchuk/foobar2000-mac-plugins/releases/tag/foo_wave_seekbar-v0.8), [Classic UI 0.18](https://github.com/kstepanchuk/foobar2000-mac-plugins/releases/tag/foo_classic_ui-v0.18), [AIMP UI 0.6](https://github.com/kstepanchuk/foobar2000-mac-plugins/releases/tag/foo_aimp_ui-v0.6), and [Behringer Multichannel Output 0.1.0](https://github.com/kstepanchuk/foobar2000-mac-plugins/releases/tag/foo_behringer_output-v0.1.0).
 
 ![Classic UI](docs/classic-ui.jpg)
 ![AIMP UI](docs/aimp-ui.jpg)
@@ -86,7 +86,7 @@ release/release.sh             build, package and publish to nanor.ru
 
 Each plugin's version is in `foobar2000/<plugin>/version.h`.
 
-`release/release.sh` builds changed plugins, creates or updates the Behringer GitHub Release, and uploads updated site files and `updates.json` to nanor.ru. It needs `NANOR_DEPLOY_HOST` and `NANOR_DEPLOY_WEBROOT`, set in the environment or in `release/deploy.env` (not committed). No combined all-plugins archive is published.
+`release/release.sh` creates versioned GitHub Releases for all four plugins, uploads updated catalog pages and `updates.json` to nanor.ru, and keeps legacy component download files as mirrors. It needs `NANOR_DEPLOY_HOST` and `NANOR_DEPLOY_WEBROOT`, set in the environment or in `release/deploy.env` (not committed). No combined all-plugins archive is published.
 
 ## License
 

@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Classic UI — nanor.ru</title>
+<meta name="description" content="Classic UI — интерфейс для foobar2000 на macOS, как у foobar2000 на Windows.">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Unbounded:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #0a0a0a; --card: #111111; --border: rgba(255,255,255,0.07);
+  --text: #e8e8e8; --muted: #666; --accent: #ffffff;
+  --tag-bg: rgba(255,255,255,0.06); --tag-border: rgba(255,255,255,0.12);
+}
+html, body { min-height: 100vh; background: var(--bg); color: var(--text); font-family: 'Space Mono', monospace; }
+.wrapper { max-width: 560px; margin: 0 auto; padding: 48px 20px 80px; }
+.back-link { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; color: var(--muted); text-decoration: none; margin-bottom: 20px; }
+.back-link:hover { color: rgba(255,255,255,0.7); }
+.banner { width: 100%; border-radius: 12px 12px 0 0; overflow: hidden; position: relative; background: #0a0a0a; border: 1px solid var(--border); border-bottom: none; padding: 36px 24px 28px; }
+.banner-inner { background: repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(255,255,255,0.015) 2px, rgba(255,255,255,0.015) 4px), linear-gradient(135deg, #0d0d0d 0%, #1c1c1c 40%, #0d0d0d 100%); position: absolute; inset: 0; z-index: 0; }
+.banner > * { position: relative; z-index: 1; }
+.proj-icon { font-size: 32px; margin-bottom: 10px; }
+.proj-title { font-family: 'Unbounded', sans-serif; font-size: 20px; font-weight: 700; color: var(--accent); margin-bottom: 6px; }
+.proj-sub { font-size: 12px; color: var(--muted); line-height: 1.6; }
+.card { background: var(--card); border: 1px solid var(--border); border-radius: 0 0 12px 12px; padding: 24px; }
+.tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 20px; }
+.tag { background: var(--tag-bg); border: 1px solid var(--tag-border); border-radius: 20px; padding: 3px 12px; font-size: 11px; color: rgba(255,255,255,0.5); }
+.download-btn { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 10px; padding: 14px; text-decoration: none; color: var(--accent); font-family: 'Space Mono', monospace; font-size: 13px; font-weight: 700; margin-bottom: 8px; transition: background 0.15s, transform 0.1s; }
+.download-btn:hover { background: rgba(255,255,255,0.16); }
+.download-btn:active { transform: scale(0.99); }
+.download-meta { text-align: center; font-size: 10px; color: var(--muted); margin-bottom: 28px; }
+.section-label { font-size: 10px; color: rgba(255,255,255,0.2); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 10px; margin-top: 26px; }
+.section-label:first-of-type { margin-top: 0; }
+.sub-label { font-size: 11px; color: rgba(255,255,255,0.5); margin: 14px 0 4px; font-weight: 700; }
+.feature-list, .limit-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+.feature-list li, .limit-list li { font-size: 12px; line-height: 1.6; color: rgba(255,255,255,0.75); padding-left: 18px; position: relative; }
+.feature-list li::before { content: '→'; position: absolute; left: 0; color: rgba(255,255,255,0.3); }
+.limit-list li::before { content: '·'; position: absolute; left: 4px; color: rgba(255,255,255,0.3); }
+.steps { list-style: none; counter-reset: step; display: flex; flex-direction: column; gap: 12px; }
+.steps li { counter-increment: step; font-size: 12px; line-height: 1.6; color: rgba(255,255,255,0.75); padding-left: 26px; position: relative; }
+.steps li::before { content: counter(step); position: absolute; left: 0; top: 0; width: 18px; height: 18px; border-radius: 50%; background: var(--tag-bg); border: 1px solid var(--tag-border); font-size: 10px; display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,0.6); }
+.code-block { position: relative; background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 8px; padding: 12px 70px 12px 14px; font-size: 11px; line-height: 1.6; color: rgba(255,255,255,0.75); overflow-x: auto; margin-top: 8px; white-space: pre; }
+.copy-btn { position: absolute; top: 8px; right: 8px; background: rgba(255,255,255,0.08); border: 1px solid var(--tag-border); border-radius: 6px; color: rgba(255,255,255,0.6); font-family: 'Space Mono', monospace; font-size: 10px; padding: 4px 8px; cursor: pointer; white-space: nowrap; transition: background 0.15s, color 0.15s; }
+.copy-btn:hover { background: rgba(255,255,255,0.16); color: #fff; }
+.copy-btn.copied { color: #8fe08f; border-color: rgba(143,224,143,0.3); }
+code { font-family: 'Space Mono', monospace; background: rgba(255,255,255,0.08); padding: 1px 5px; border-radius: 4px; font-size: 11px; }
+.warning { background: rgba(255,200,0,0.07); border: 1px solid rgba(255,200,0,0.22); border-radius: 8px; padding: 14px 16px; margin-top: 10px; }
+.warning-title { font-size: 11px; font-weight: 700; color: rgba(255,220,140,0.95); margin-bottom: 6px; }
+.warning p { font-size: 12px; line-height: 1.6; color: rgba(255,220,150,0.85); }
+.shot-placeholder { border: 1px dashed var(--tag-border); border-radius: 10px; padding: 36px 16px; text-align: center; font-size: 11px; color: rgba(255,255,255,0.25); background: rgba(255,255,255,0.015); }
+.owner-note { border: 1px dashed var(--tag-border); border-radius: 8px; padding: 12px 14px; font-size: 11px; line-height: 1.8; color: rgba(255,255,255,0.45); margin-top: 10px; }
+.owner-note b { color: rgba(255,255,255,0.7); }
+.footer { text-align: center; margin-top: 28px; font-size: 10px; color: rgba(255,255,255,0.1); letter-spacing: 1px; }
+</style>
+</head>
+<body>
+
+<div class="wrapper">
+  <a class="back-link" href="../">← все плагины</a>
+
+  <div class="banner">
+    <div class="banner-inner"></div>
+    <div class="proj-icon"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="rgba(255,170,90,0.9)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.125em"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 9v12"/></svg></div>
+    <div class="proj-title">Classic UI для foobar2000 (macOS)</div>
+    <div class="proj-sub">Интерфейс как у foobar2000 на Windows: тулбар, вкладки плейлистов, классический плейлист со строкой статуса.</div>
+  </div>
+
+  <div class="card">
+    <div class="tags">
+      <span class="tag">v{{VERSION}}</span>
+      <span class="tag">foobar2000 2.x</span>
+      <span class="tag">Apple Silicon / Intel</span>
+    </div>
+
+    <a class="download-btn" href="{{RELEASE_URL}}" target="_blank" rel="noopener"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.125em"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M4 21h16"/></svg> Скачать foo_classic_ui.fb2k-component</a>
+    <div class="download-meta">v{{VERSION}}</div>
+
+    <div class="section-label">// возможности</div>
+
+    <div class="sub-label">Тулбар <code>classic-toolbar</code></div>
+    <ul class="feature-list">
+      <li>Кнопки воспроизведения и выбор порядка (Order)</li>
+      <li>Громкость в тулбаре</li>
+    </ul>
+
+    <div class="sub-label">Вкладки плейлистов <code>classic-tabs</code></div>
+    <ul class="feature-list">
+      <li>Прокрутка колёсиком и стрелками, переключение плейлистов клавишами ← →</li>
+      <li>Перетаскивание вкладок меняет порядок плейлистов</li>
+      <li>Если навести на вкладку перетаскиваемые треки, она откроется</li>
+      <li>Меню по правому клику: создать, переименовать, удалить</li>
+    </ul>
+
+    <div class="sub-label">Плейлист <code>classic-playlist</code></div>
+    <ul class="feature-list">
+      <li>Колонки как в foobar (Artist, Title, Duration, Play Count, File path и др.) плюс свои по шаблону</li>
+      <li>Сортировка кликом по заголовку</li>
+      <li>Группировка по альбому, исполнителю или папке</li>
+      <li>Подсветка играющего трека</li>
+      <li>Перетаскивание внутри плейлиста, между плейлистами, из Finder и в Finder</li>
+      <li>Контекстное меню трека</li>
+      <li>Поиск ⌘F; ⌘A, ⌘C, ⌘X, ⌘V, ⌘Z работают на любой раскладке, включая русскую</li>
+    </ul>
+
+    <div class="sub-label">Строка статуса <code>classic-statusbar</code></div>
+    <ul class="feature-list">
+      <li>Формат настраивается</li>
+    </ul>
+
+    <div class="sub-label">Поиск по медиатеке</div>
+    <ul class="feature-list">
+      <li>Library → Search Library…, найденное можно добавить в плейлист</li>
+    </ul>
+
+    <div class="sub-label">Настройки</div>
+    <ul class="feature-list">
+      <li>Settings → Display → Classic UI (шрифт, высота строк, формат статуса)</li>
+      <li>Очередь воспроизведения: правый клик по треку → Add to Playback Queue, номер в очереди в колонке Playing</li>
+      <li>Блокировка плейлиста от изменений (правый клик по вкладке → Lock Playlist), значок замка на вкладке</li>
+      <li>Recently Closed: восстановление закрытых плейлистов (правый клик по вкладке или ⇧⌘T)</li>
+      <li>Хоткеи: ⌘1…⌘9 — плейлисты, ⌘T — новый, ⌥⌘W — закрыть, ⌘J — к играющему треку</li>
+      <li>Темы: светлая, тёмная, тёмная монохромная «как на Windows» и свой акцентный цвет</li>
+      <li>Название играющего трека в заголовке окна, формат настраивается</li>
+      <li>Крестик закрытия на вкладках включается в настройках</li>
+      <li>Проверка обновлений: File → Check for Plugin Updates…</li>
+    </ul>
+
+    <div class="section-label">// скриншот</div>
+    <a href="screenshot.jpg?v=3" class="shot-link"><img src="screenshot.jpg?v=3" alt="Classic UI в foobar2000 для Mac" loading="lazy" style="display:block;width:100%;height:auto;border:1px solid var(--tag-border);border-radius:10px"></a>
+
+    <div class="section-label">// установка</div>
+    <ol class="steps">
+      <li>Скачайте файл <code>foo_classic_ui.fb2k-component</code> (кнопка выше).</li>
+      <li>
+        Снимите карантин macOS. Откройте Терминал, перейдите в папку со скачанным файлом и выполните команду ниже.
+        <div class="warning">
+          <div class="warning-title"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.125em"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg> Важно</div>
+          <p>Без этого macOS может сказать «файл повреждён», потому что плагин не подписан Apple.</p>
+        </div>
+        <div class="code-block" id="code-q">xattr -dr com.apple.quarantine foo_classic_ui.fb2k-component<button class="copy-btn" onclick="copyCode('code-q', this)">Копировать</button></div>
+      </li>
+      <li>Дважды кликните по файлу или откройте в foobar2000 Preferences → Components и нажмите «+». Перезапустите foobar2000.</li>
+      <li>Откройте View → Layout → Edit Layout, вставьте раскладку ниже и нажмите Apply.</li>
+    </ol>
+    <div class="code-block" id="code-layout">splitter horizontal style=thin
+ classic-toolbar
+ waveform-seekbar
+ classic-tabs
+ classic-playlist
+ classic-statusbar<button class="copy-btn" onclick="copyCode('code-layout', this)">Копировать</button></div>
+    <p style="font-size:11px;color:var(--muted);margin-top:10px;line-height:1.6;">Элемент <code>waveform-seekbar</code> — отдельный плагин <a href="../waveform-seekbar/" style="color:rgba(255,255,255,0.5);">Waveform Seekbar</a>, его можно убрать из раскладки, если не нужен. Вернуть стандартный вид — View → Layout, выбрав любой встроенный вариант.</p>
+
+    <div class="section-label">// известные ограничения</div>
+    <ul class="limit-list">
+      <li>Плагин не подписан Apple, поэтому нужен шаг 2 установки</li>
+    </ul>
+
+    <div class="owner-note">Автор: <b>nanor.ru</b> · Лицензия: <b>MIT</b> · Связь: <b><a href="https://nanor.ru/" style="color:rgba(255,255,255,0.7);">nanor.ru</a></b> · Исходный код: <b><a href="https://github.com/kstepanchuk/foobar2000-mac-plugins" target="_blank" rel="noopener" style="color:rgba(255,255,255,0.7);">GitHub</a></b></div>
+  </div>
+
+  <div class="footer">nanor.ru / classic-ui</div>
+</div>
+
+<script>
+function copyCode(id, btn) {
+  const el = document.getElementById(id);
+  const text = el.childNodes[0].textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const original = btn.textContent;
+    btn.textContent = '✓ Скопировано';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = original; btn.classList.remove('copied'); }, 1600);
+  });
+}
+</script>
+
+<style>
+.shot-link { display:block; cursor: zoom-in; }
+.shot-lightbox { position: fixed; inset: 0; z-index: 1000; display: none; align-items: center; justify-content: center;
+  padding: 24px; background: rgba(0,0,0,0.85); cursor: zoom-out; }
+.shot-lightbox.open { display: flex; }
+.shot-lightbox img { max-width: 100%; max-height: 100%; border-radius: 10px; border: 1px solid var(--tag-border);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.6); }
+.shot-lightbox button { position: absolute; top: 14px; right: 18px; background: none; border: 0; color: rgba(255,255,255,0.8);
+  font: 28px/1 monospace; cursor: pointer; }
+</style>
+<div class="shot-lightbox" role="dialog" aria-modal="true" aria-label="Скриншот"><button type="button" aria-label="Закрыть">×</button><img alt=""></div>
+<script>
+(function () {
+  var box = document.querySelector(".shot-lightbox"), img = box.querySelector("img");
+  function close() { box.classList.remove("open"); document.body.style.overflow = ""; }
+  document.querySelectorAll(".shot-link").forEach(function (a) {
+    a.addEventListener("click", function (e) {
+      e.preventDefault();
+      var inner = a.querySelector("img");
+      img.src = a.getAttribute("href"); img.alt = inner ? inner.alt : "";
+      box.classList.add("open"); document.body.style.overflow = "hidden";
+    });
+  });
+  box.addEventListener("click", close);
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape") close(); });
+})();
+</script>
+</body>
+</html>

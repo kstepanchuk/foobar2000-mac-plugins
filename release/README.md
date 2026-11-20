@@ -1,8 +1,8 @@
 # Publishing
 
-`release.sh` builds changed components, creates `.fb2k-component` packages and compares their versions with `https://nanor.ru/foobar/updates.json`.
+`release.sh` builds changed components, creates `.fb2k-component` packages and compares their versions with `https://nanor.ru/foobar/updates.json` and GitHub Releases.
 
-Changed legacy UI components are uploaded to nanor.ru as before. Behringer Multichannel Output gets a GitHub Release asset named `foo_behringer_output.fb2k-component`; the site detail page links to that asset. The release updates the plugin catalog and `updates.json`. The combined all-plugins archive is no longer generated or linked.
+Every plugin version has a GitHub Release with its `.fb2k-component` asset. The nanor.ru detail pages link to those assets; `updates.json` also points to GitHub. Existing legacy download files remain on nanor.ru as mirrors. The combined all-plugins archive is no longer generated or linked.
 
 ## Configure deployment
 
@@ -23,6 +23,6 @@ Run from the repository root after committing and pushing the version change:
 ./release/release.sh "Release notes"
 ```
 
-The script keeps timestamped copies of every replaced nanor.ru file, creates the GitHub Release `foo_behringer_output-v<VERSION>`, publishes the site page and update manifest, then verifies the release asset checksum.
+The script keeps timestamped copies of every replaced nanor.ru file, creates missing GitHub Releases in the form `<component>-v<VERSION>`, publishes the affected detail page, catalog and update manifest, then verifies release asset checksums.
 
 Use `--dry-run` to build and show the resulting update manifest without creating a GitHub Release or uploading files.
