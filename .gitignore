@@ -6,6 +6,7 @@ build/
 
 # Release output and local deploy settings
 release/dist/
+release/build-*/
 release/deploy.env
 
 .DS_Store
