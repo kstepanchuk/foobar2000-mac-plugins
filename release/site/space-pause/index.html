@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Space Pause — nanor.ru</title>
+<meta name="description" content="Space Pause для foobar2000 на macOS: пробел переключает паузу и продолжение воспроизведения.">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Unbounded:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0a0a0a;--card:#111;--border:rgba(255,255,255,.07);--text:#e8e8e8;--muted:#777;--tag-bg:rgba(255,255,255,.06);--tag-border:rgba(255,255,255,.12)}
+html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'Space Mono',monospace}
+.wrapper{max-width:560px;margin:0 auto;padding:48px 20px 80px}
+.back-link{display:inline-flex;gap:6px;font-size:11px;color:var(--muted);text-decoration:none;margin-bottom:20px}
+.back-link:hover{color:rgba(255,255,255,.8)}
+.banner{position:relative;overflow:hidden;padding:36px 24px 28px;background:repeating-linear-gradient(45deg,transparent,transparent 2px,rgba(255,255,255,.015) 2px,rgba(255,255,255,.015) 4px),linear-gradient(135deg,#0d0d0d,#1c1c1c 40%,#0d0d0d);border:1px solid var(--border);border-bottom:0;border-radius:12px 12px 0 0}
+.icon{font-size:30px;margin-bottom:12px;color:rgba(255,255,255,.8)}
+.title{font-family:'Unbounded',sans-serif;font-size:20px;font-weight:700;margin-bottom:8px}
+.subtitle{font-size:12px;line-height:1.7;color:var(--muted)}
+.card{padding:24px;background:var(--card);border:1px solid var(--border);border-radius:0 0 12px 12px}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:22px}
+.tag{padding:3px 12px;border:1px solid var(--tag-border);border-radius:20px;background:var(--tag-bg);font-size:11px;color:rgba(255,255,255,.55)}
+.download{display:flex;align-items:center;gap:10px;padding:14px;border:1px solid var(--tag-border);border-radius:10px;background:var(--tag-bg);color:var(--text);text-decoration:none;font-size:12px;font-weight:700}
+.download:hover{background:rgba(255,255,255,.1)}
+.label{margin:26px 0 10px;color:rgba(255,255,255,.35);font-size:10px;letter-spacing:2px;text-transform:uppercase}
+.copy{font-size:12px;line-height:1.8;color:rgba(255,255,255,.65)}
+ol{padding-left:20px;font-size:11px;line-height:1.9;color:rgba(255,255,255,.65)}
+code{color:rgba(255,255,255,.85)}
+.code{position:relative;overflow:auto;margin-top:10px;padding:14px;border:1px solid var(--tag-border);border-radius:8px;background:#090909;color:#ddd;font:11px/1.7 'Space Mono',monospace}
+.note{margin-top:14px;padding:12px 14px;border:1px solid var(--tag-border);border-radius:8px;font-size:11px;line-height:1.7;color:var(--muted)}
+.footer{text-align:center;margin-top:28px;font-size:10px;color:rgba(255,255,255,.2)}
+.footer a{color:inherit}
+</style>
+</head>
+<body>
+<main class="wrapper">
+  <a class="back-link" href="../">← все плагины</a>
+  <header class="banner">
+    <div class="icon" aria-hidden="true">Ⅱ</div>
+    <h1 class="title">Space Pause для foobar2000</h1>
+    <p class="subtitle">Нажмите пробел в активном окне плеера, чтобы поставить музыку на паузу или продолжить воспроизведение.</p>
+  </header>
+  <section class="card">
+    <div class="tags"><span class="tag">v1.1.0</span><span class="tag">foobar2000 2.x</span><span class="tag">macOS 12+</span><span class="tag">Apple Silicon / Intel</span></div>
+    <a class="download" href="https://github.com/kstepanchuk/foobar2000-mac-plugins/releases/download/foo_space_pause-v1.1.0/foo_space_pause-v1.1.0.fb2k-component" target="_blank" rel="noopener">↓ Скачать foo_space_pause-v1.1.0.fb2k-component</a>
+
+    <h2 class="label">// как работает</h2>
+    <p class="copy">Пробел переключает паузу и воспроизведение, когда активно окно foobar2000. Назначать клавишу в Keyboard Shortcuts не нужно: foobar2000 для Mac не разрешает назначить одиночный пробел. В текстовых полях пробел остаётся обычным символом.</p>
+
+    <h2 class="label">// установка</h2>
+    <ol>
+      <li>Скачайте компонент по кнопке выше.</li>
+      <li>В foobar2000 откройте <code>Settings → Components</code>, нажмите «+» и выберите скачанный файл.</li>
+      <li>Перезапустите foobar2000. Теперь пробел переключает паузу, когда активно окно плеера.</li>
+    </ol>
+    <p class="note">Если macOS блокирует компонент из-за карантина, откройте Терминал в папке загрузок и выполните:<br><code>xattr -dr com.apple.quarantine foo_space_pause-v1.1.0.fb2k-component</code></p>
+
+    <h2 class="label">// исходный код</h2>
+    <p class="copy"><a href="https://github.com/kstepanchuk/foobar2000-mac-plugins/tree/main/foobar2000/foo_space_pause" target="_blank" rel="noopener" style="color:rgba(255,255,255,.75)">foo_space_pause на GitHub</a> · <a href="https://github.com/kstepanchuk/foobar2000-mac-plugins/releases/tag/foo_space_pause-v1.1.0" target="_blank" rel="noopener" style="color:rgba(255,255,255,.75)">релиз 1.1.0</a></p>
+  </section>
+  <footer class="footer">nanor.ru / foobar2000-mac-plugins · <a href="https://nanor.ru/">nanor.ru</a></footer>
+</main>
+</body>
+</html>
